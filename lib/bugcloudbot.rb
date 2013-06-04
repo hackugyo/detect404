@@ -15,15 +15,14 @@ module BugcloudBot
 
     # コンストラクタ
     def initialize
-      $KCODE = 'utf8'
 
       # rubytterの準備
       @rubytter = BugcloudBot::Auth.get_oauth_rubytter
 
       # APIの利用残を取得
-#       rate_limit_status = @rubytter.limit_status
-#       puts rate_limit_status
-#       exit
+      #       rate_limit_status = @rubytter.limit_status
+      #       puts rate_limit_status
+      #       exit
 
       # source.txtの読み込み
       eval(File.open(TWEET_SOURCE).read)
@@ -53,13 +52,13 @@ module BugcloudBot
       #pp last_since_id
 
       @tweet_source.each do |t_s|
-      temp = []
-      # 取得したtimelineの中からsource.txtに設定した内容にマッチするものを抽出
+        temp = []
+        # 取得したtimelineの中からsource.txtに設定した内容にマッチするものを抽出
         last_time_line.each do |t|
           if /#{t_s[0]}/ =~ t[:text]
             if /#{t_s[1]}/ =~ t[:text]
               if /#{t_s[2]}/ =~ t[:text]
-                temp<<t
+                temp << t
               end
             end
           end
@@ -104,7 +103,10 @@ module BugcloudBot
 
     # timelineを取得
     def get_last_friends_timeline
-        @rubytter.friends_timeline(:count => 200, :since_id => @since_id)
+      @rubytter.public_timeline(:count => 200, :since_id => @since_id).each do |status|
+        puts "#{status.user.screen_name}: "#{status.text}"
+      end
+
     end
 
     #update

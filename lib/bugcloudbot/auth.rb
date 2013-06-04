@@ -6,7 +6,12 @@ module BugcloudBot
       consumer = OAuth::Consumer.new(
                                      BugcloudBot::Tokens::CONSUMER_KEY,
                                      BugcloudBot::Tokens::CONSUMER_SECRET,
-                                     :site => 'http://twitter.com'
+                                     {
+                                       :site => 'http://api.twitter.com',
+                                       :request_token_path => '/oauth/request_token',
+                                       :authorize_path => '/oauth/authorize',
+                                       :access_token_path => '/oauth/access_token'
+                                     }
                                      )
 
       OAuth::AccessToken.new(
