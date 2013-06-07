@@ -22,9 +22,20 @@ class Tweet
     update(tweet)
   end
 
-  def get_home_timeline
-    result = home_timeline
+  puts @last_id
+  
+  
+  def get_tweet_with_404_links
+    result = home_timeline(@last_id)
     result ||= []
+    last_id = nil
+    result.each do |tweet|
+      puts tweet.attrs[:id_str]
+      last_id ||= tweet.attrs[:id]      
+    end
+    @last_id = last_id if last_id
+    puts @last_id.to_s
+    
   end
   
   private
@@ -38,11 +49,13 @@ class Tweet
     end
   end
 
-  def home_timeline
+  def home_timeline(last_id)
     begin
       # TODO since_idのようなoptionsを設定すること．
       # https://dev.twitter.com/docs/api/1/get/statuses/home_timeline
-      Twitter.home_timeline
+      options = {}
+      options[:since_id] = last_id if last_id
+      Twitter.home_timeline(options)
     rescue => ex
       puts "error."
     end
