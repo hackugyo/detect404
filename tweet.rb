@@ -22,7 +22,12 @@ class Tweet
     update(tweet)
   end
 
-private
+  def get_home_timeline
+    result = home_timeline
+    result ||= []
+  end
+  
+  private
   def update(tweet)
     return nil unless tweet
 
@@ -30,6 +35,16 @@ private
       Twitter.update(tweet.chomp)
     rescue => ex
       nil # todo
+    end
+  end
+
+  def home_timeline
+    begin
+      # TODO since_idのようなoptionsを設定すること．
+      # https://dev.twitter.com/docs/api/1/get/statuses/home_timeline
+      Twitter.home_timeline
+    rescue => ex
+      puts "error."
     end
   end
 
