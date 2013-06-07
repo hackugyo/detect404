@@ -30,7 +30,7 @@ class Tweet
     # TODO linksを発射するかどうか
     begin
       Twitter.update(
-                     get_notify_message(tweet[:user][:screen_name]),
+                     get_notify_message(tweet[:user][:screen_name], links),
                      {:in_reply_to_status_id => tweet[:id]}
                      )
     rescue => ex
@@ -140,15 +140,19 @@ class Tweet
     end
   end
 
-  def get_notify_message(screen_name)
+  def get_notify_message(screen_name, links = [])
     lines = NOTIFY_MESSAGE_DICTIONARY.rstrip.split(/\r?\n/).map {|line| line.chomp }
-    "@#{screen_name} #{lines[rand(lines.length)]}"
+    "@#{screen_name} #{lines[rand(lines.length)]} #{links.join(' ')}"
   end
 
   NOTIFY_MESSAGE_DICTIONARY = <<'EOS'
 リンクが404です
 リンクが404だよ！
 ◆リン◆ ドーモ、404探偵です。リンク直すべし◆殺◆
+もしかして： 404
+404（回文）
+Your linked Web page may be not found.
+リンクが40xのようです。Not Foundか，Forbiddenなどの可能性もあります。
 
 EOS
 end
