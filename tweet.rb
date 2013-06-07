@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'twitter'
+require 'pp'
+require 'net/http'
 
 class Tweet
 
@@ -26,16 +28,31 @@ class Tweet
   
   
   def get_tweet_with_404_links
-    result = home_timeline(@last_id)
-    result ||= []
+    tweets = home_timeline(@last_id)
+    tweets ||= []
     last_id = nil
-    result.each do |tweet|
-      puts tweet.attrs[:id_str]
-      last_id ||= tweet.attrs[:id]      
+    tweets_with_404 = []
+    tweets.each do |tweet|
+      last_id ||= tweet.attrs[:id]
+
+      # 対象外のツイートを削除
+      next if tweet.attrs[:retweeted_status]
+
+      # 本文がリンクを含んでいるかどうかを抜き出す
+      links = extract_links(tweet.attrs[:text])
+            
+      links.select! do |link|
+        is40x?(link)
+      end
+
+      # TODO ここで，linksとtweetでできたハッシュを作って返す
+      tweets_with_404 << {:tweet => tweet, :links => links}
+            
     end
     @last_id = last_id if last_id
     puts @last_id.to_s
-    
+
+    return tweets_with_404
   end
   
   private
@@ -58,7 +75,58 @@ class Tweet
       Twitter.home_timeline(options)
     rescue => ex
       puts "error."
+      p ex
+      []
     end
   end
+
+  def extract_links(text)
+    result = []
+    uri_reg = URI.regexp(['http','https'])
+    text.scan(uri_reg) do
+      result << URI.parse($&)
+    end
+    
+    return result
+  end
+
+  # http://doc.ruby-lang.org/ja/1.9.2/library/net=2fhttp.html
+  def is40x?(uri_str, limit = 10)
+    
+    return true if limit == 0 # 10回たらいまわしされたら404と考える
+    begin
+      response = Net::HTTP.get_response(URI.parse(uri_str.to_s))
+    rescue EOFError
+      puts "EOFError. Regard as not dead. #{uri_str}"
+      return false
+    rescue => ex
+      puts "Error occured. Regard as dead. #{uri_str}"
+      p ex
+      # puts "This link is dead! #{uri_str}"
+      return true
+    end
+    
+      
+    case response
+    when Net::HTTPFatalError
+      # puts "This link is dead! #{uri_str}"
+      true
+    when Net::HTTPClientError
+      # puts "This link is dead! #{uri_str}"
+      true
+    when Net::HTTPRedirection
+      # リダイレクト対応
+      # puts "This link is redirected. #{uri_str}"
+      # puts "  to #{response['location']}"
+      # pp response
+      # "http://www.kantei.go.jp/fake"にアクセスすると302で終わっている？
+      is40x?(response['location'], limit -1)
+    else
+      # pp response
+      # puts "This link is not dead. #{uri_str}"
+      false
+    end
+  end
+  
 
 end
