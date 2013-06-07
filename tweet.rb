@@ -27,10 +27,10 @@ class Tweet
   puts @last_id
 
   def notify_404(tweet, links = [])
-    # TODO linksを発射するかどうか
+    message = get_notify_message(tweet[:user][:screen_name], links)
     begin
       Twitter.update(
-                     get_notify_message(tweet[:user][:screen_name], links),
+                     message,
                      {:in_reply_to_status_id => tweet[:id]}
                      )
     rescue => ex
@@ -40,15 +40,18 @@ class Tweet
   
   
   def get_tweet_with_404_links
-    tweets = home_timeline(@last_id)
-    tweets ||= []
     last_id = nil
     tweets_with_404 = []
+    
+    tweets = home_timeline(@last_id)
+    tweets ||= []
+    puts "nothing new." if tweets.empty?
     tweets.each do |tweet|
       last_id ||= tweet.attrs[:id]
-
+      puts "(id: #{tweet.attrs[:id]}) #{tweet.attrs[:text]}"
       # 対象外のツイートを削除
       next if tweet.attrs[:retweeted_status]
+      next if (tweet.attrs[:user][:screen_name] == "404_detective")
 
       # 本文がリンクを含んでいるかどうかを抜き出す
       links = extract_links(tweet.attrs[:text])
@@ -62,7 +65,7 @@ class Tweet
             
     end
     @last_id = last_id if last_id
-    puts @last_id.to_s
+    puts "last_id is now #{@last_id.to_s}."
 
     return tweets_with_404
   end
@@ -74,13 +77,12 @@ class Tweet
     begin
       Twitter.update(tweet.chomp)
     rescue => ex
-      nil # todo
+      pp ex
     end
   end
 
   def home_timeline(last_id)
     begin
-      # TODO since_idのようなoptionsを設定すること．
       # https://dev.twitter.com/docs/api/1/get/statuses/home_timeline
       options = {}
       options[:since_id] = last_id if last_id
@@ -151,8 +153,9 @@ class Tweet
 ◆リン◆ ドーモ、404探偵です。リンク直すべし◆殺◆
 もしかして： 404
 404（回文）
-Your linked Web page may be not found.
+Hey, dead link(s) found!
+The page you posted may be Not Found.
+Hey, that page is non-existense!
 リンクが40xのようです。Not Foundか，Forbiddenなどの可能性もあります。
-
 EOS
 end

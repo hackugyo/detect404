@@ -10,13 +10,13 @@ handler do |job|
   @twitter ||= Tweet.new
   @twitter.get_tweet_with_404_links.each do |tweet|
     next if (tweet[:links].empty?)
-    next if (tweet[:tweet][:user][:screen_name] == "404_detective")
     puts "#{tweet[:tweet][:text]}"
     puts "Your link is dead! #{tweet[:links].map{|link| link.to_s}}"
     # ここで404リンクのやつに対してtweetする
     # tweet[:tweet]
     @twitter.notify_404(tweet[:tweet], tweet[:links])
-  end  
+  end
+  puts "notified."
 end
 
 every(61.seconds, 'frequent.job')
