@@ -14,7 +14,7 @@ handler do |job|
     puts "Your link is dead! #{tweet[:links].map{|link| link.to_s}}"
     # ここで404リンクのやつに対してtweetする
     # tweet[:tweet]
-
+    @twitter.notify_404(tweet[:tweet], tweet[:links])
   end  
 end
 

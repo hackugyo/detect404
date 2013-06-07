@@ -25,6 +25,18 @@ class Tweet
   end
 
   puts @last_id
+
+  def notify_404(tweet, links = [])
+    # TODO linksを発射するかどうか
+    begin
+      Twitter.update(
+                     get_notify_message(tweet[:user][:screen_name]),
+                     {:in_reply_to_status_id => tweet[:id]}
+                     )
+    rescue => ex
+      puts ex
+    end
+  end
   
   
   def get_tweet_with_404_links
@@ -127,6 +139,16 @@ class Tweet
       false
     end
   end
-  
 
+  def get_notify_message(screen_name)
+    lines = NOTIFY_MESSAGE_DICTIONARY.rstrip.split(/\r?\n/).map {|line| line.chomp }
+    "@#{screen_name} #{lines[rand(lines.length)]}"
+  end
+
+  NOTIFY_MESSAGE_DICTIONARY = <<'EOS'
+リンクが404です
+リンクが404だよ！
+◆リン◆ ドーモ、404探偵です。リンク直すべし◆殺◆
+
+EOS
 end
