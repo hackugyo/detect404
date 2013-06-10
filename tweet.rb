@@ -133,8 +133,10 @@ class Tweet
       # puts "This link is redirected. #{uri_str}"
       # puts "  to #{response['location']}"
       # pp response
-      # "http://www.kantei.go.jp/fake"にアクセスすると302で終わっている？
-      is40x?(response['location'], limit -1)
+      # next_locationに相対パスが入れられていても寛容に解釈する
+      # http://magazine.rubyist.net/?0013-BundledLibraries
+      next_location = URI.join(uri_str, response['location']).to_s
+      is40x?(next_location, limit -1)
     else
       # pp response
       # puts "This link is not dead. #{uri_str}"
