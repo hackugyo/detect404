@@ -19,3 +19,4 @@ rerun.txt
 pickle-email-*.html
 .project
 # Gemfile.lock # for Heroku
+.env
