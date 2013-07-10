@@ -143,7 +143,11 @@ class Tweet
       # pp response
       # next_locationに相対パスが入れられていても寛容に解釈する
       # http://magazine.rubyist.net/?0013-BundledLibraries
-      next_location = URI.join(uri_str, response['location']).to_s
+      begin
+        next_location = URI.join(uri_str, response['location']).to_s
+      rescue URI::InvalidURIError
+        next_location = response['location']        
+      end
       is40x?(next_location, limit -1)
     else
       # pp response
