@@ -2,6 +2,7 @@
 require 'twitter'
 require 'pp'
 require 'net/http'
+require 'net/https'
 
 class Tweet
 
@@ -109,7 +110,14 @@ class Tweet
     
     return true if limit == 0 # 10回たらいまわしされたら404と考える
     begin
-      response = Net::HTTP.get_response(URI.parse(uri_str.to_s))
+      uri = URI.parse(uri_str.to_s)
+      http = Net::HTTP.new uri.host, uri.port
+      is_https = (uri.scheme == "https")
+      http.use_ssl = is_https
+      # pp is_https
+      # pp uri.scheme
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE if (is_https) 
+      response = http.request Net::HTTP::Get.new uri.request_uri
     rescue EOFError
       puts "EOFError. Regard as not dead. #{uri_str}"
       return false
